@@ -1,6 +1,6 @@
 const service = require('../services/postsService')
 
-async function getAllPosts(request, response, next) {
+async function index(request, response, next) {
     try {
         const results = await service.getPosts()
    
@@ -12,7 +12,7 @@ async function getAllPosts(request, response, next) {
     }
 }
 
-async function getPost(request, response, next) {
+async function show(request, response, next) {
     try {
         const result = await service.getPost(request.params.post)
    
@@ -25,6 +25,6 @@ async function getPost(request, response, next) {
 }
 
 module.exports = {
-    getAllPosts,
-    getPost
+    index,
+    show
 }

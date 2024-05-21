@@ -3,17 +3,13 @@ const database = require('../../config/database');
 async function getPosts() {
     const db = await database;
 
-    const results = await db.collection(process.env.DB_DATABASE).find({}).toArray()
-
-    return results;
+    return await db.collection(process.env.DB_DATABASE).find({}).toArray()
 }
 
 async function getPost(identifier) {
     const db = await database;
 
-    const result = await db.collection(process.env.DB_DATABASE).find({'id': identifier}).toArray()
-
-    return result;
+    return await db.collection(process.env.DB_DATABASE).find({'id': identifier}).toArray();
 }
 
 module.exports = {
