@@ -1,7 +1,7 @@
 /**
  * Module dependencies.
  */
-const app = require('./app');
+const app = require('./app/index');
 const debug = require('debug')('bloggy:server');
 const http = require('http');
 
