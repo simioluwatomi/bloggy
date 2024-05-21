@@ -8,6 +8,15 @@ async function getPosts() {
     return results;
 }
 
+async function getPost(identifier) {
+    const db = await database;
+
+    const result = await db.collection(process.env.DB_DATABASE).find({'id': identifier}).toArray()
+
+    return result;
+}
+
 module.exports = {
-    getPosts
+    getPosts,
+    getPost
 }

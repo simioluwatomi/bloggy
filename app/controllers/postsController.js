@@ -12,6 +12,19 @@ async function getAllPosts(request, response, next) {
     }
 }
 
+async function getPost(request, response, next) {
+    try {
+        const result = await service.getPost(request.params.post)
+   
+        response.json({ 'data': result})
+    } catch (error) {
+        console.log(`Error querying database: ${error}`);
+    
+        response.status(500).json({error: `Internal server error`});
+    }
+}
+
 module.exports = {
-    getAllPosts
+    getAllPosts,
+    getPost
 }
