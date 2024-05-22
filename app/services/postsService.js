@@ -1,15 +1,15 @@
 const database = require('../../config/database');
 
 async function getPosts() {
-    const db = await database;
+    const collection = await database.connect('posts');
 
-    return await db.collection(process.env.DB_DATABASE).find({}).toArray()
+    return await collection.find({}).toArray()
 }
 
 async function getPost(identifier) {
-    const db = await database;
+    const collection = await database.connect('posts');
 
-    return await db.collection(process.env.DB_DATABASE).find({'id': identifier}).toArray();
+    return await collection.find({'id': identifier}).toArray();
 }
 
 module.exports = {

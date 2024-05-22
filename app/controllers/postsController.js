@@ -1,6 +1,6 @@
 const service = require('../services/postsService')
 
-async function index(request, response, next) {
+async function index(request, response) {
     try {
         const results = await service.getPosts()
    
@@ -8,11 +8,11 @@ async function index(request, response, next) {
     } catch (error) {
         console.log(`Error querying database: ${error}`);
     
-        response.status(500).json({error: `Internal server error`});
+        response.status(500).json({ 'data': { 'error': 'Error querying database' } });
     }
 }
 
-async function show(request, response, next) {
+async function show(request, response) {
     try {
         const result = await service.getPost(request.params.post)
    
@@ -20,7 +20,7 @@ async function show(request, response, next) {
     } catch (error) {
         console.log(`Error querying database: ${error}`);
     
-        response.status(500).json({error: `Internal server error`});
+        response.status(500).json({ 'data': { 'error': 'Error querying database' } });
     }
 }
 
