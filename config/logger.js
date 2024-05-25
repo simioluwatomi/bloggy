@@ -1,23 +1,14 @@
 const path = require('path');
-const rfs = require('rotating-file-stream')
+const rfs = require('rotating-file-stream');
+const { format } = require('date-fns');
 
 const generator = () => {
-    const time = new Date();
+    const today = new Date();
 
-    let year = time.getFullYear();
-    let month = pad(time.getMonth() + 1);
-    let day = pad(time.getDate());
+    const formattedDate = format(today, 'yyyy-MM-dd')
 
-    return `express-${year}-${month}-${day}.log`
+    return `express-${formattedDate}.log`
 };
-
-const pad = (num) => {
-    if (num < 10) {
-        return `0${num}`
-    }
-
-    return num;
-}
 
 // create a write stream (in append mode)
 const rotatingFileStream = rfs.createStream(generator, {

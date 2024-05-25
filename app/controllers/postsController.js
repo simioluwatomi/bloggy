@@ -20,11 +20,24 @@ async function show(request, response) {
     } catch (error) {
         console.log(`Error querying database: ${error}`);
     
-        response.status(500).json({ 'data': { 'error': 'Error querying database' } });
+        response.status(error.statusCode ?? 500).json({ 'data': { 'error': `${error.message}` } });
+    }
+}
+
+async function store(request, response) {
+    try {
+        const result = await service.createPost(request.body)
+   
+        response.status(201).json({ 'data': result})
+    } catch (error) {
+        console.log(`Error querying database: ${error}`);
+    
+        response.status(error.statusCode ?? 500).json({ 'data': { 'error': `${error.message}` } });
     }
 }
 
 module.exports = {
     index,
-    show
+    show,
+    store
 }
