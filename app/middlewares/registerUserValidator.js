@@ -3,9 +3,9 @@ const Joi = require('joi');
 function validateRegisterRequest(request, response, next) {
 
     const schema = Joi.object({
-        first_name: Joi.string().trim().required().min(3).max(30),
-        last_name: Joi.string().trim().required().min(3).max(30),
-        username: Joi.string().trim().required().min(4).alphanum(),
+        first_name: Joi.string().trim().required().min(2).max(30),
+        last_name: Joi.string().trim().required().min(2).max(30),
+        username: Joi.string().trim().required().min(4).max(30).alphanum(),
         email: Joi.string().trim().required().email(),
         password: Joi.string().trim().required().min(6).max(30)
     });

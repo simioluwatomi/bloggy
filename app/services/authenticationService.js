@@ -5,6 +5,17 @@ const { format } = require('date-fns');
 
 async function registerUser(userData) {
     const collection = await database.connect('users');
+
+    const existingUsers = await collection.find({
+        $or: [
+            { username: userData.username },
+            { email: userData.email }
+        ]
+    }).toArray()
+
+    if(existingUsers.length > 0) {
+        throw Error('Existing users found');
+    }
     
     const today = new Date();
 
