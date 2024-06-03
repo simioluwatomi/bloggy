@@ -8,7 +8,7 @@ async function register(request, response) {
     } catch (error) {
         console.log(`Error querying database: ${error}`);
     
-        response.status(500).json({ 'data': { 'error': 'Error registering user' } });
+        response.status(error.statusCode ?? 500).json({ 'data': { 'error': `${error.message}` } });
     }
 }
 

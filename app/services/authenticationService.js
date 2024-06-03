@@ -2,19 +2,22 @@ const database = require('../../config/database');
 const { hashPassword } = require('./../utilities/hash')
 const ULID = require('ulid')
 const { format } = require('date-fns');
+const ResourceExists = require('../errors/ResourceExisits');
 
 async function registerUser(userData) {
     const collection = await database.connect('users');
 
-    const existingUsers = await collection.find({
-        $or: [
-            { username: userData.username },
-            { email: userData.email }
-        ]
-    }).toArray()
+    const existingUser = await collection.findOne(
+        {
+            $or: [
+                    { username: userData.username },
+                    { email: userData.email }
+                ]
+        }
+    )
 
-    if(existingUsers.length > 0) {
-        throw Error('Existing users found');
+    if(existingUser) {
+        throw new ResourceExists('A user with the provided username or email address exists');
     }
     
     const today = new Date();
