@@ -1,4 +1,4 @@
-const service = require('../services/postsService')
+const service = require('./../../services/postsService')
 
 async function index(request, response) {
     try {
