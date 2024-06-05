@@ -1,13 +1,10 @@
 const Joi = require('joi');
 
-function validateRegisterRequest(request, response, next) {
+function validateLoginRequest(request, response, next) {
 
     const schema = Joi.object({
-        first_name: Joi.string().trim().required().min(3).max(30),
-        last_name: Joi.string().trim().required().min(3).max(30),
-        username: Joi.string().trim().required().min(4).alphanum(),
-        email: Joi.string().trim().required().email(),
-        password: Joi.string().trim().required().min(6).max(30)
+        username_or_email: Joi.string().trim().required(),
+        password: Joi.string().trim().required()
     });
 
     const { error } = schema.validate(request.body, { abortEarly: false });
@@ -34,4 +31,4 @@ function validateRegisterRequest(request, response, next) {
     next();
 }
 
-module.exports = validateRegisterRequest;
+module.exports = validateLoginRequest;

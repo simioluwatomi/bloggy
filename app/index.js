@@ -5,8 +5,8 @@ const rotatingFileStream = require('../config/logger')
 require('dotenv').config();
 
 // route declaration
-const postsRouter = require('./routes/posts');
-const authRouter = require('./routes/auth');
+const postsRouter = require('./http/routes/posts');
+const authRouter = require('./http/routes/auth');
 
 const app = express();
 

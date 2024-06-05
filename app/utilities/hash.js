@@ -22,7 +22,9 @@ async function hashPassword(password) {
                 reject(error);
             }
 
-            resolve(`${salt}:${derivedKey.toString("hex")}`);
+            let hashedPassword = derivedKey.toString("hex")
+
+            resolve(`${salt}.${hashedPassword}`);
         });
 
     });
@@ -39,7 +41,7 @@ async function hashPassword(password) {
 async function compareHash(password, hash) {
     return new Promise((resolve, reject) => {
 
-        const [salt, hashKey] = hash.split(":");
+        const [salt, hashKey] = hash.split(".");
 
         const buffer = Buffer.from(hashKey, "hex");
 
