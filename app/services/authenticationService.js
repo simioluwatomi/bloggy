@@ -1,11 +1,10 @@
 const ULID = require('ulid')
 const jwt = require('jsonwebtoken');
-const { format } = require('date-fns');
+const { addSeconds, getTime, format, formatISO } = require('date-fns');
 const database = require('../../config/database');
 const { hashPassword, compareHash } = require('./../utilities/hash')
 const ResourceExists = require('../errors/ResourceExisits');
 const AuthenticationError = require('./../errors/AuthenticationError');
-const { generateKeys } = require('../utilities/keygenerator');
 
 async function registerUser(userData) {
     const collection = await database.connect('users');
@@ -19,7 +18,7 @@ async function registerUser(userData) {
         }
     )
 
-    if(existingUser) {
+    if (existingUser) {
         throw new ResourceExists('A user with the provided username or email address exists');
     }
     
@@ -62,20 +61,35 @@ async function login(usernameOrEmail, password) {
         throw new AuthenticationError('User credentials do not match our records')
     }
 
-    const token = jwt.sign({ 
-        email: user.email,
-        username: user.username,
-        id: user.id,
-    }, process.env.APP_KEY, { expiresIn: 60 *30, issuer: process.env.JWT_ISSUER });
+    const expiryDate = addSeconds(new Date(), process.env.JWT_TOKEN_EXPIRY);
+
+    const token = jwt.sign(
+        {
+            exp: Math.floor(getTime(expiryDate) / 1000),
+            email: user.email,
+            username: user.username,
+            id: user.id,
+        },
+        process.env.APP_KEY,
+        {
+            issuer: process.env.JWT_TOKEN_ISSUER,
+            notBefore: '0s'
+        }
+    );
 
     return {
-        id: user.id,
-        email: user.email,
-        username: user.username,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        created_at: user.created_at,
-        token: token
+        user: {
+            id: user.id,
+            email: user.email,
+            username: user.username,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            created_at: user.created_at,
+        },
+        jwt: {
+            token: token,
+            expires_at: formatISO(expiryDate)
+        }
     };
 }
 
