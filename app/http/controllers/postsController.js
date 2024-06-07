@@ -36,8 +36,19 @@ async function store(request, response) {
     }
 }
 
+async function destroy(request, response) {
+    try {
+        const result = await service.deletePost(request.params.post)
+   
+        response.status(204).json()
+    } catch (error) {
+        console.log(`Error deleting post: ${error}`);
+    }
+}
+
 module.exports = {
     index,
     show,
-    store
+    store,
+    destroy
 }

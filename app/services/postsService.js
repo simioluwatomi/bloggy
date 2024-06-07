@@ -41,8 +41,19 @@ async function createPost(postData) {
     return result;
 }
 
+async function deletePost(identifier) {
+    const collection = await database.connect('posts');
+
+    const result = await collection.deleteOne({ 'id': identifier });
+
+    console.log(result);
+
+    return result;
+}
+
 module.exports = {
     getPosts,
     getPost,
-    createPost
+    createPost,
+    deletePost
 }
