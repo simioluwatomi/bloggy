@@ -2,9 +2,11 @@ const ULID = require('ulid')
 const jwt = require('jsonwebtoken');
 const { addSeconds, getTime, format, formatISO } = require('date-fns');
 const database = require('../../config/database');
-const { hashPassword, compareHash } = require('./../utilities/hash')
+const { hashPassword, compareHash, generateOTP } = require('./../utilities/hash')
 const ResourceExists = require('../errors/ResourceExisits');
 const AuthenticationError = require('./../errors/AuthenticationError');
+const transporter = require('../../config/mail');
+const { randomInt } = require('node:crypto')
 
 async function registerUser(userData) {
     const collection = await database.connect('users');
@@ -93,7 +95,59 @@ async function login(usernameOrEmail, password) {
     };
 }
 
+async function initiatePasswordReset(usernameOrEmail) {
+    const collection = await database.connect('users');
+
+    const user = await collection.findOne(
+        {
+            $or: [
+                    { username: usernameOrEmail },
+                    { email: usernameOrEmail }
+                ]
+        }
+    )
+
+    if (user === null) {
+        throw new NotFound('User credentials do not match our records')
+    }
+
+    const oneTimePasswordsCollection = await database.connect('one_time_passwords')
+
+    const expiryDate = addSeconds(new Date(), (15 * 60));
+
+    let token, duplicates;
+
+    do {
+        token = await generateOTP();
+
+        duplicates = await oneTimePasswordsCollection.countDocuments({ 'token': token})
+    } while (duplicates > 0);
+
+    await oneTimePasswordsCollection.insertOne({
+        id: ULID.ulid(),
+        user_id: user.id,
+        token: token,
+        expires_at: formatISO(expiryDate),
+    });
+    
+    // send an email containing OTP
+    try {
+        await transporter.sendMail({
+            from: process.env.MAIL_SECURITY_FROM,
+            to: user.email,
+            subject: "Password Reset Infitiated",
+            text: `We received a request to initiate password reset for your account. Your OTP is ${token}`,
+        });
+    } catch (error) {
+    }
+
+    return {
+        message: `You will receive an email with password reset instructions if an account is found for: ${usernameOrEmail}`
+    };
+}
+
 module.exports = {
     registerUser,
-    login
+    login,
+    initiatePasswordReset
 }

@@ -24,7 +24,20 @@ async function login(request, response) {
     }
 }
 
+async function requestPasswordReset(request, response) {
+    try {
+        const results = await service.initiatePasswordReset(request.body.email ?? request.body.username)
+   
+        response.json({ 'data': results})
+    } catch (error) {
+        console.log(`Error querying database: ${error}`);
+    
+        response.status(error.statusCode ?? 500).json({ 'data': { 'error': `${error.message}` } });
+    }
+}
+
 module.exports = {
     register,
-    login
+    login,
+    requestPasswordReset
 }
