@@ -1,11 +1,12 @@
 const Joi = require('joi');
 
-function validateInitiatePasswordResetRequest(request, response, next) {
+function validateCompletePasswordResetRequest(request, response, next) {
 
     const schema = Joi.object({
-        username: Joi.string().trim().optional(),
-        email: Joi.string().trim().email().optional(),
-    }).xor('email', 'username');
+        token: Joi.string().trim().required().length(6),
+        password: Joi.string().trim().required().min(6).max(30),
+        password_confirm: Joi.ref('password'),
+    });
 
     const { error } = schema.validate(request.body, { abortEarly: false });
     
@@ -31,4 +32,4 @@ function validateInitiatePasswordResetRequest(request, response, next) {
     next();
 }
 
-module.exports = validateInitiatePasswordResetRequest;
+module.exports = validateCompletePasswordResetRequest;

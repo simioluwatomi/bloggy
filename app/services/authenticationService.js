@@ -1,12 +1,14 @@
 const ULID = require('ulid')
 const jwt = require('jsonwebtoken');
-const { addSeconds, getTime, format, formatISO } = require('date-fns');
+const { addSeconds, getTime, format, formatISO, parseISO, isPast } = require('date-fns');
 const database = require('../../config/database');
 const { hashPassword, compareHash, generateOTP } = require('./../utilities/hash')
 const ResourceExists = require('../errors/ResourceExisits');
 const AuthenticationError = require('./../errors/AuthenticationError');
+const NotFound = require('./../errors/NotFound');
+
 const transporter = require('../../config/mail');
-const { randomInt } = require('node:crypto')
+const { randomInt, randomBytes } = require('node:crypto')
 
 async function registerUser(userData) {
     const collection = await database.connect('users');
@@ -113,12 +115,14 @@ async function initiatePasswordReset(usernameOrEmail) {
 
     const oneTimePasswordsCollection = await database.connect('one_time_passwords')
 
+    await oneTimePasswordsCollection.deleteMany({ 'user_id': user.id });
+
     const expiryDate = addSeconds(new Date(), (15 * 60));
 
     let token, duplicates;
 
     do {
-        token = await generateOTP();
+        token = randomBytes(32).toString('hex');
 
         duplicates = await oneTimePasswordsCollection.countDocuments({ 'token': token})
     } while (duplicates > 0);
@@ -129,6 +133,8 @@ async function initiatePasswordReset(usernameOrEmail) {
         token: token,
         expires_at: formatISO(expiryDate),
     });
+
+    let link = process.env.FE_APP_URL + `/reset-password/${token}`;
     
     // send an email containing OTP
     try {
@@ -136,7 +142,7 @@ async function initiatePasswordReset(usernameOrEmail) {
             from: process.env.MAIL_SECURITY_FROM,
             to: user.email,
             subject: "Password Reset Infitiated",
-            text: `We received a request to initiate password reset for your account. Your OTP is ${token}`,
+            text: `We received a request to initiate password reset for your account. Click the link to continue: ${link}`,
         });
     } catch (error) {
     }
@@ -146,8 +152,40 @@ async function initiatePasswordReset(usernameOrEmail) {
     };
 }
 
+async function resetPassword(token, password) {
+    const oneTimePasswordsCollection = await database.connect('one_time_passwords')
+
+    const otp = await oneTimePasswordsCollection.findOne({ 'token': token });
+
+    if (otp === null) {
+        throw new NotFound('Invalid OTP provided')
+    }
+
+    let parsedDate = parseISO(otp.expires_at);
+
+    if (isPast(parsedDate)) {
+        oneTimePasswordsCollection.deleteOne({ 'id' : otp.id });
+
+        throw Error('OTP has expired')
+    }
+
+    const usersCollection = await database.connect('users');
+
+    const hashedPassword = await hashPassword(password);
+
+    await usersCollection.findOneAndUpdate(
+        { 'id': token.user_id },
+        { $set: { "password" : hashedPassword } }
+    );
+
+    return {
+        message: 'Password reset successful'
+    };
+}
+
 module.exports = {
     registerUser,
     login,
-    initiatePasswordReset
+    initiatePasswordReset,
+    resetPassword
 }

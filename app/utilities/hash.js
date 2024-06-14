@@ -70,7 +70,7 @@ async function generateOTP() {
                 reject(error)
             };
     
-            resolve(number);
+            resolve(number.toString());
         });
     });
 };
