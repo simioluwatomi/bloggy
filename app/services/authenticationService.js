@@ -6,9 +6,10 @@ const { hashPassword, compareHash, generateOTP } = require('./../utilities/hash'
 const ResourceExists = require('../errors/ResourceExisits');
 const AuthenticationError = require('./../errors/AuthenticationError');
 const NotFound = require('./../errors/NotFound');
+const { randomBytes } = require('node:crypto');
+const passwordResetEvent = require('../events/PasswordResetEvent');
 
-const transporter = require('../../config/mail');
-const { randomInt, randomBytes } = require('node:crypto')
+  console.log(user.password);
 
 async function registerUser(userData) {
     const collection = await database.connect('users');
@@ -136,16 +137,7 @@ async function initiatePasswordReset(usernameOrEmail) {
 
     let link = process.env.FE_APP_URL + `/reset-password/${token}`;
     
-    // send an email containing OTP
-    try {
-        await transporter.sendMail({
-            from: process.env.MAIL_SECURITY_FROM,
-            to: user.email,
-            subject: "Password Reset Infitiated",
-            text: `We received a request to initiate password reset for your account. Click the link to continue: ${link}`,
-        });
-    } catch (error) {
-    }
+    passwordResetEvent.emit('passwordResetInitiated', user.email, link);
 
     return {
         message: `You will receive an email with password reset instructions if an account is found for: ${usernameOrEmail}`
